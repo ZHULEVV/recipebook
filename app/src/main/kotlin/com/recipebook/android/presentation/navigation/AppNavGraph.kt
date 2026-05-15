@@ -18,6 +18,9 @@ import androidx.navigation.navArgument
 import com.recipebook.android.presentation.auth.forgotpassword.ForgotPasswordScreen
 import com.recipebook.android.presentation.auth.login.LoginScreen
 import com.recipebook.android.presentation.auth.register.RegisterScreen
+import com.recipebook.android.presentation.home.HomeScreen
+import com.recipebook.android.presentation.recipedetails.RecipeDetailsScreen
+import com.recipebook.android.presentation.search.SearchScreen
 
 private val bottomNavRoutes = setOf(
     Screen.Home.route,
@@ -73,10 +76,14 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
                 )
             }
             composable(Screen.Home.route) {
-                PlaceholderScreen("Home")
+                HomeScreen(
+                    onRecipeClick = { id -> navController.navigate(Screen.RecipeDetails.route(id)) }
+                )
             }
             composable(Screen.Search.route) {
-                PlaceholderScreen("Search")
+                SearchScreen(
+                    onRecipeClick = { id -> navController.navigate(Screen.RecipeDetails.route(id)) }
+                )
             }
             composable(Screen.Favorites.route) {
                 PlaceholderScreen("Favorites")
@@ -94,7 +101,10 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
                 route = Screen.RecipeDetails.route,
                 arguments = listOf(navArgument(Screen.RecipeDetails.ARG_RECIPE_ID) { type = NavType.StringType })
             ) {
-                PlaceholderScreen("RecipeDetails")
+                RecipeDetailsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onCommentsClick = { id -> navController.navigate(Screen.Comments.route(id)) }
+                )
             }
             composable(
                 route = Screen.Comments.route,
