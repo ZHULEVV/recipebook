@@ -1,13 +1,9 @@
 package com.recipebook.android.presentation.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,12 +14,14 @@ import androidx.navigation.navArgument
 import com.recipebook.android.presentation.auth.forgotpassword.ForgotPasswordScreen
 import com.recipebook.android.presentation.auth.login.LoginScreen
 import com.recipebook.android.presentation.auth.register.RegisterScreen
+import com.recipebook.android.presentation.comments.CommentsScreen
 import com.recipebook.android.presentation.favorites.FavoritesScreen
 import com.recipebook.android.presentation.home.HomeScreen
 import com.recipebook.android.presentation.mealplan.MealPlanScreen
 import com.recipebook.android.presentation.profile.ProfileScreen
 import com.recipebook.android.presentation.recipedetails.RecipeDetailsScreen
 import com.recipebook.android.presentation.search.SearchScreen
+import com.recipebook.android.presentation.shoppinglist.ShoppingListScreen
 
 private val bottomNavRoutes = setOf(
     Screen.Home.route,
@@ -99,7 +97,9 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
                 )
             }
             composable(Screen.ShoppingList.route) {
-                PlaceholderScreen("ShoppingList")
+                ShoppingListScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
             composable(Screen.Profile.route) {
                 ProfileScreen(
@@ -123,15 +123,10 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
                 route = Screen.Comments.route,
                 arguments = listOf(navArgument(Screen.Comments.ARG_RECIPE_ID) { type = NavType.StringType })
             ) {
-                PlaceholderScreen("Comments")
+                CommentsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = name)
     }
 }
