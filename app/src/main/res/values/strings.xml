@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Сборник рецептов</string>
+
+    <string name="nav_home">Главная</string>
+    <string name="nav_search">Поиск</string>
+    <string name="nav_favorites">Избранное</string>
+    <string name="nav_meal_plan">План питания</string>
+    <string name="nav_profile">Профиль</string>
+
+    <string name="btn_retry">Повторить</string>
+    <string name="label_min">%d мин</string>
+
+    <string name="error_unknown">Неизвестная ошибка</string>
+    <string name="error_no_internet">Нет подключения к интернету</string>
+    <string name="error_loading">Не удалось загрузить данные</string>
 </resources>
