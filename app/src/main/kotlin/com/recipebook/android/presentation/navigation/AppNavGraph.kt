@@ -15,6 +15,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.recipebook.android.presentation.auth.forgotpassword.ForgotPasswordScreen
+import com.recipebook.android.presentation.auth.login.LoginScreen
+import com.recipebook.android.presentation.auth.register.RegisterScreen
 
 private val bottomNavRoutes = setOf(
     Screen.Home.route,
@@ -44,13 +47,30 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Login.route) {
-                PlaceholderScreen("Login")
+                LoginScreen(
+                    onNavigateToHome = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateToRegister = { navController.navigate(Screen.Register.route) },
+                    onNavigateToForgotPassword = { navController.navigate(Screen.ForgotPassword.route) }
+                )
             }
             composable(Screen.Register.route) {
-                PlaceholderScreen("Register")
+                RegisterScreen(
+                    onNavigateToHome = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateToLogin = { navController.popBackStack() }
+                )
             }
             composable(Screen.ForgotPassword.route) {
-                PlaceholderScreen("ForgotPassword")
+                ForgotPasswordScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
             composable(Screen.Home.route) {
                 PlaceholderScreen("Home")
