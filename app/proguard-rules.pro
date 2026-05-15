@@ -1,0 +1,3 @@
+-keep class com.recipebook.android.** { *; }
+-keepattributes Signature
+-keepattributes *Annotation*

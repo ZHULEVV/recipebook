@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.RecipeBook" parent="Theme.Material3.DayNight.NoActionBar" />
+
+    <style name="Theme.RecipeBook.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.RecipeBook</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+    </style>
+</resources>
