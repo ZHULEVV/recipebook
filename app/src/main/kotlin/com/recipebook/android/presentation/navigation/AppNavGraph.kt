@@ -18,7 +18,10 @@ import androidx.navigation.navArgument
 import com.recipebook.android.presentation.auth.forgotpassword.ForgotPasswordScreen
 import com.recipebook.android.presentation.auth.login.LoginScreen
 import com.recipebook.android.presentation.auth.register.RegisterScreen
+import com.recipebook.android.presentation.favorites.FavoritesScreen
 import com.recipebook.android.presentation.home.HomeScreen
+import com.recipebook.android.presentation.mealplan.MealPlanScreen
+import com.recipebook.android.presentation.profile.ProfileScreen
 import com.recipebook.android.presentation.recipedetails.RecipeDetailsScreen
 import com.recipebook.android.presentation.search.SearchScreen
 
@@ -86,16 +89,26 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
                 )
             }
             composable(Screen.Favorites.route) {
-                PlaceholderScreen("Favorites")
+                FavoritesScreen(
+                    onRecipeClick = { id -> navController.navigate(Screen.RecipeDetails.route(id)) }
+                )
             }
             composable(Screen.MealPlan.route) {
-                PlaceholderScreen("MealPlan")
+                MealPlanScreen(
+                    onRecipeClick = { id -> navController.navigate(Screen.RecipeDetails.route(id)) }
+                )
             }
             composable(Screen.ShoppingList.route) {
                 PlaceholderScreen("ShoppingList")
             }
             composable(Screen.Profile.route) {
-                PlaceholderScreen("Profile")
+                ProfileScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
             composable(
                 route = Screen.RecipeDetails.route,
