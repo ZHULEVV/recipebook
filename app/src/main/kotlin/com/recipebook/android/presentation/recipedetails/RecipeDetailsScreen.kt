@@ -124,7 +124,7 @@ fun RecipeDetailsScreen(
                     item {
                         val localFallback = LocalDishImages.forTitle(recipe.title)
                         AsyncImage(
-                            model = recipe.imageUrl,
+                            model = LocalDishImages.resolveModel(recipe.imageUrl, recipe.title),
                             contentDescription = recipe.title,
                             contentScale = ContentScale.Crop,
                             error = localFallback?.let { painterResource(it) },
