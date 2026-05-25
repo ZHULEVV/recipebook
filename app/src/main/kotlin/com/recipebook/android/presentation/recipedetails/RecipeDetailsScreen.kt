@@ -20,23 +20,32 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,8 +53,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.recipebook.android.R
+import com.recipebook.android.domain.model.MealType
 import com.recipebook.android.presentation.components.ErrorPlaceholder
 import com.recipebook.android.presentation.components.LoadingIndicator
+import com.recipebook.android.presentation.util.LocalDishImages
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,8 +66,24 @@ fun RecipeDetailsScreen(
     viewModel: RecipeDetailsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.mealPlanSuccess) {
+        if (uiState.mealPlanSuccess) {
+            snackbarHostState.showSnackbar("Добавлено в план питания")
+            viewModel.clearMealPlanSuccess()
+        }
+    }
+
+    if (uiState.showMealPlanDialog) {
+        MealTypePickerDialog(
+            onDismiss = viewModel::dismissMealPlanDialog,
+            onSelect = viewModel::addToMealPlan
+        )
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(uiState.recipe?.title ?: "") },
@@ -95,10 +122,13 @@ fun RecipeDetailsScreen(
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     item {
+                        val localFallback = LocalDishImages.forTitle(recipe.title)
                         AsyncImage(
                             model = recipe.imageUrl,
                             contentDescription = recipe.title,
                             contentScale = ContentScale.Crop,
+                            error = localFallback?.let { painterResource(it) },
+                            fallback = localFallback?.let { painterResource(it) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(240.dp)
@@ -243,7 +273,21 @@ fun RecipeDetailsScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        androidx.compose.material3.OutlinedButton(
+                        OutlinedButton(
+                            onClick = viewModel::showMealPlanDialog,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Icon(
+                                Icons.Outlined.CalendarMonth,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                            Text("Добавить в план питания")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
                             onClick = { onCommentsClick(recipe.id) },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -256,4 +300,37 @@ fun RecipeDetailsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun MealTypePickerDialog(
+    onDismiss: () -> Unit,
+    onSelect: (MealType) -> Unit
+) {
+    val options = listOf(
+        MealType.BREAKFAST to "Завтрак",
+        MealType.LUNCH     to "Обед",
+        MealType.DINNER    to "Ужин",
+        MealType.SNACK     to "Перекус"
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Добавить в план питания") },
+        text = {
+            Column {
+                options.forEach { (type, label) ->
+                    TextButton(
+                        onClick = { onSelect(type) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(label, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Отмена") }
+        }
+    )
 }
