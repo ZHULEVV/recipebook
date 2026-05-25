@@ -1,6 +1,9 @@
 package com.recipebook.android.data.remote.mapper
 
 import com.recipebook.android.data.remote.dto.CommentDto
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 import com.recipebook.android.data.remote.dto.IngredientDto
 import com.recipebook.android.data.remote.dto.MealPlanEntryDto
 import com.recipebook.android.data.remote.dto.RatingDto
@@ -62,13 +65,29 @@ fun UserDto.toDomain() = User(
     avatarUrl   = avatarUrl
 )
 
+private fun parseIso8601(dateStr: String): Long {
+    val normalized = dateStr.replace(Regex("(\\.\\d{3})\\d+"), "$1")
+    val formats = listOf(
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    )
+    for (fmt in formats) {
+        runCatching {
+            return SimpleDateFormat(fmt, Locale.US)
+                .apply { timeZone = TimeZone.getTimeZone("UTC") }
+                .parse(normalized)!!.time
+        }
+    }
+    return 0L
+}
+
 fun CommentDto.toDomain() = Comment(
     id        = id,
     recipeId  = recipeId,
     userId    = userId,
     userName  = userName,
     text      = text,
-    createdAt = createdAt
+    createdAt = parseIso8601(createdAt)
 )
 
 fun RatingDto.toDomain() = Rating(

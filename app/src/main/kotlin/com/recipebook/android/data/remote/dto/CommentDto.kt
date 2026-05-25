@@ -9,5 +9,5 @@ data class CommentDto(
     val userId: String,
     val userName: String,
     val text: String,
-    val createdAt: Long
+    val createdAt: String
 )
