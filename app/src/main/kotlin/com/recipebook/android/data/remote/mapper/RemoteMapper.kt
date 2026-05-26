@@ -34,7 +34,7 @@ fun StepDto.toDomain() = Step(
 )
 
 fun RecipeIngredientDto.toDomain() = RecipeIngredient(
-    ingredient = ingredient.toDomain(),
+    ingredient = Ingredient(id = ingredientId, name = name),
     amount     = amount,
     unit       = unit
 )

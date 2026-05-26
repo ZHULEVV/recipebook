@@ -13,6 +13,8 @@ import com.recipebook.android.domain.usecase.SearchRecipesUseCase
 import com.recipebook.android.domain.usecase.ToggleFavoriteUseCase
 import com.recipebook.android.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,6 +48,8 @@ class SearchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
+    private var debounceJob: Job? = null
+
     init {
         loadTags()
         observeHistory()
@@ -68,6 +72,11 @@ class SearchViewModel @Inject constructor(
 
     fun onQueryChange(value: String) {
         _uiState.update { it.copy(query = value, error = null) }
+        debounceJob?.cancel()
+        debounceJob = viewModelScope.launch {
+            delay(500)
+            search()
+        }
     }
 
     fun toggleTag(tagId: String) {
@@ -80,13 +89,19 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    fun toggleTagAndSearch(tagId: String) {
+        toggleTag(tagId)
+        search()
+    }
+
     fun search() {
         val state = _uiState.value
         val query = state.query.trim()
+        val selectedTagIds = state.selectedTagIds.toList()
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, hasSearched = true) }
             if (query.isNotBlank()) addSearchHistoryUseCase(query)
-            when (val result = searchRecipesUseCase(query, state.selectedTagIds.toList())) {
+            when (val result = searchRecipesUseCase(query, selectedTagIds)) {
                 is Resource.Success -> _uiState.update { it.copy(isLoading = false, results = result.data) }
                 is Resource.Error   -> _uiState.update { it.copy(isLoading = false, error = result.message) }
                 else                -> _uiState.update { it.copy(isLoading = false) }
