@@ -26,6 +26,8 @@ import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -38,10 +40,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -56,6 +61,9 @@ import com.recipebook.android.R
 import com.recipebook.android.domain.model.MealType
 import com.recipebook.android.presentation.components.ErrorPlaceholder
 import com.recipebook.android.presentation.components.LoadingIndicator
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import com.recipebook.android.presentation.util.LocalDishImages
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,9 +84,11 @@ fun RecipeDetailsScreen(
     }
 
     if (uiState.showMealPlanDialog) {
-        MealTypePickerDialog(
-            onDismiss = viewModel::dismissMealPlanDialog,
-            onSelect = viewModel::addToMealPlan
+        MealPlanPickerDialog(
+            selectedDate = uiState.selectedMealPlanDate,
+            onDateChange = viewModel::onMealPlanDateChange,
+            onDismiss    = viewModel::dismissMealPlanDialog,
+            onSelect     = viewModel::addToMealPlan
         )
     }
 
@@ -302,35 +312,89 @@ fun RecipeDetailsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MealTypePickerDialog(
+private fun MealPlanPickerDialog(
+    selectedDate: String,
+    onDateChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSelect: (MealType) -> Unit
 ) {
-    val options = listOf(
+    val fmt = DateTimeFormatter.ISO_LOCAL_DATE
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val mealOptions = listOf(
         MealType.BREAKFAST to "Завтрак",
         MealType.LUNCH     to "Обед",
         MealType.DINNER    to "Ужин",
         MealType.SNACK     to "Перекус"
     )
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Добавить в план питания") },
-        text = {
-            Column {
-                options.forEach { (type, label) ->
+
+    if (showDatePicker) {
+        val initialMs = runCatching {
+            java.time.LocalDate.parse(selectedDate, fmt)
+                .atStartOfDay(ZoneId.of("UTC"))
+                .toInstant()
+                .toEpochMilli()
+        }.getOrElse { System.currentTimeMillis() }
+
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMs)
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { ms ->
+                        val date = Instant.ofEpochMilli(ms)
+                            .atZone(ZoneId.of("UTC"))
+                            .toLocalDate()
+                            .format(fmt)
+                        onDateChange(date)
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Отмена") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Добавить в план питания") },
+            text = {
+                Column {
                     TextButton(
-                        onClick = { onSelect(type) },
+                        onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(label, style = MaterialTheme.typography.bodyLarge)
+                        Icon(
+                            androidx.compose.material.icons.Icons.Outlined.CalendarMonth,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            "Дата: $selectedDate",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    mealOptions.forEach { (type, label) ->
+                        TextButton(
+                            onClick = { onSelect(type) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(label, style = MaterialTheme.typography.bodyLarge)
+                        }
                     }
                 }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = onDismiss) { Text("Отмена") }
             }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Отмена") }
-        }
-    )
+        )
+    }
 }
