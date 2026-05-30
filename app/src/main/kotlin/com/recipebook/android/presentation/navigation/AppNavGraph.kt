@@ -15,9 +15,11 @@ import com.recipebook.android.presentation.auth.forgotpassword.ForgotPasswordScr
 import com.recipebook.android.presentation.auth.login.LoginScreen
 import com.recipebook.android.presentation.auth.register.RegisterScreen
 import com.recipebook.android.presentation.comments.CommentsScreen
+import com.recipebook.android.presentation.createrecipe.CreateRecipeScreen
 import com.recipebook.android.presentation.favorites.FavoritesScreen
 import com.recipebook.android.presentation.home.HomeScreen
 import com.recipebook.android.presentation.mealplan.MealPlanScreen
+import com.recipebook.android.presentation.myrecipes.MyRecipesScreen
 import com.recipebook.android.presentation.profile.ProfileScreen
 import com.recipebook.android.presentation.recipedetails.RecipeDetailsScreen
 import com.recipebook.android.presentation.search.SearchScreen
@@ -78,7 +80,8 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
             }
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onRecipeClick = { id -> navController.navigate(Screen.RecipeDetails.route(id)) }
+                    onRecipeClick    = { id -> navController.navigate(Screen.RecipeDetails.route(id)) },
+                    onMyRecipesClick = { navController.navigate(Screen.MyRecipes.route) }
                 )
             }
             composable(Screen.Search.route) {
@@ -93,12 +96,28 @@ fun AppNavGraph(startDestination: String = Screen.Login.route) {
             }
             composable(Screen.MealPlan.route) {
                 MealPlanScreen(
-                    onRecipeClick = { id -> navController.navigate(Screen.RecipeDetails.route(id)) }
+                    onRecipeClick       = { id -> navController.navigate(Screen.RecipeDetails.route(id)) },
+                    onShoppingListClick = { navController.navigate(Screen.ShoppingList.route) }
                 )
             }
             composable(Screen.ShoppingList.route) {
-                ShoppingListScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                ShoppingListScreen(onNavigateBack = { navController.popBackStack() })
+            }
+            composable(Screen.MyRecipes.route) {
+                MyRecipesScreen(
+                    onNavigateBack  = { navController.popBackStack() },
+                    onRecipeClick   = { id -> navController.navigate(Screen.RecipeDetails.route(id)) },
+                    onCreateRecipe  = { navController.navigate(Screen.CreateRecipe.route) }
+                )
+            }
+            composable(Screen.CreateRecipe.route) {
+                CreateRecipeScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onSaved        = {
+                        navController.navigate(Screen.MyRecipes.route) {
+                            popUpTo(Screen.CreateRecipe.route) { inclusive = true }
+                        }
+                    }
                 )
             }
             composable(Screen.Profile.route) {

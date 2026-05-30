@@ -8,6 +8,7 @@ import com.recipebook.android.data.repository.MealPlanRepositoryImpl
 import com.recipebook.android.data.repository.RatingRepositoryImpl
 import com.recipebook.android.data.repository.RecipeRepositoryImpl
 import com.recipebook.android.data.repository.SearchHistoryRepositoryImpl
+import com.recipebook.android.data.repository.ShoppingListRepositoryImpl
 import com.recipebook.android.data.repository.TagRepositoryImpl
 import com.recipebook.android.data.repository.UserRepositoryImpl
 import com.recipebook.android.domain.repository.AuthRepository
@@ -18,6 +19,7 @@ import com.recipebook.android.domain.repository.MealPlanRepository
 import com.recipebook.android.domain.repository.RatingRepository
 import com.recipebook.android.domain.repository.RecipeRepository
 import com.recipebook.android.domain.repository.SearchHistoryRepository
+import com.recipebook.android.domain.repository.ShoppingListRepository
 import com.recipebook.android.domain.repository.TagRepository
 import com.recipebook.android.domain.repository.UserRepository
 import dagger.Module
@@ -41,6 +43,9 @@ object RepositoryModule {
 
     @Provides @Singleton
     fun provideMealPlanRepository(impl: MealPlanRepositoryImpl): MealPlanRepository = impl
+
+    @Provides @Singleton
+    fun provideShoppingListRepository(impl: ShoppingListRepositoryImpl): ShoppingListRepository = impl
 
     @Provides @Singleton
     fun provideCommentRepository(impl: CommentRepositoryImpl): CommentRepository = impl

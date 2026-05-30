@@ -4,10 +4,10 @@ import com.recipebook.android.domain.model.MealPlanEntry
 import com.recipebook.android.domain.repository.MealPlanRepository
 import com.recipebook.android.domain.util.Resource
 import javax.inject.Inject
-import kotlinx.coroutines.flow.Flow
 
 class GetMealPlanUseCase @Inject constructor(
     private val mealPlanRepository: MealPlanRepository
 ) {
-    operator fun invoke(): Flow<Resource<List<MealPlanEntry>>> = mealPlanRepository.getMealPlan()
+    suspend operator fun invoke(from: String, to: String): Resource<List<MealPlanEntry>> =
+        mealPlanRepository.getMealPlan(from, to)
 }

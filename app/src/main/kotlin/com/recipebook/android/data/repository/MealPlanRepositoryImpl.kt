@@ -1,5 +1,7 @@
 package com.recipebook.android.data.repository
 
+import com.recipebook.android.data.local.database.dao.RecipeCacheDao
+import com.recipebook.android.data.local.mapper.toDomain
 import com.recipebook.android.data.remote.api.RecipeBookApi
 import com.recipebook.android.data.remote.dto.AddToMealPlanRequestDto
 import com.recipebook.android.data.remote.mapper.toDomain
@@ -9,23 +11,22 @@ import com.recipebook.android.domain.model.MealType
 import com.recipebook.android.domain.repository.MealPlanRepository
 import com.recipebook.android.domain.util.Resource
 import javax.inject.Inject
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 class MealPlanRepositoryImpl @Inject constructor(
-    private val api: RecipeBookApi
+    private val api: RecipeBookApi,
+    private val recipeCacheDao: RecipeCacheDao
 ) : MealPlanRepository {
 
-    override fun getMealPlan(): Flow<Resource<List<MealPlanEntry>>> = flow {
-        emit(Resource.Loading)
-        try {
-            val entries = api.getMealPlan().map { it.toDomain() }
-            if (entries.isEmpty()) emit(Resource.Empty)
-            else emit(Resource.Success(entries))
-        } catch (e: Exception) {
-            emit(Resource.Error(e.message ?: "Ошибка загрузки"))
+    override suspend fun getMealPlan(from: String, to: String): Resource<List<MealPlanEntry>> =
+        safeApiCall {
+            api.getMealPlan(from, to).map { dto ->
+                val entry = dto.toDomain()
+                if (entry.recipe == null) {
+                    val cached = recipeCacheDao.getById(entry.recipeId)?.toDomain()
+                    entry.copy(recipe = cached)
+                } else entry
+            }
         }
-    }
 
     override suspend fun addToMealPlan(
         recipeId: String,
@@ -37,7 +38,4 @@ class MealPlanRepositoryImpl @Inject constructor(
 
     override suspend fun removeFromMealPlan(entryId: String): Resource<Unit> =
         safeApiCall { api.removeFromMealPlan(entryId) }
-
-    override suspend fun getMealPlanByDate(date: String): Resource<List<MealPlanEntry>> =
-        safeApiCall { api.getMealPlanByDate(date).map { it.toDomain() } }
 }

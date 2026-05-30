@@ -3,11 +3,14 @@ package com.recipebook.android.data.remote.api
 import com.recipebook.android.data.remote.dto.AddCommentRequestDto
 import com.recipebook.android.data.remote.dto.AddToMealPlanRequestDto
 import com.recipebook.android.data.remote.dto.CommentDto
+import com.recipebook.android.data.remote.dto.CreateRecipeRequestDto
 import com.recipebook.android.data.remote.dto.IngredientDto
 import com.recipebook.android.data.remote.dto.MealPlanEntryDto
+import com.recipebook.android.data.remote.dto.PagedResponseDto
 import com.recipebook.android.data.remote.dto.RateRecipeRequestDto
 import com.recipebook.android.data.remote.dto.RatingDto
 import com.recipebook.android.data.remote.dto.RecipeDto
+import com.recipebook.android.data.remote.dto.ShoppingItemDto
 import com.recipebook.android.data.remote.dto.TagDto
 import com.recipebook.android.data.remote.dto.UserDto
 import retrofit2.http.Body
@@ -21,7 +24,12 @@ import retrofit2.http.Query
 interface RecipeBookApi {
 
     @GET("recipes")
-    suspend fun getRecipes(): List<RecipeDto>
+    suspend fun getRecipes(
+        @Query("tagId") tagIds: List<String> = emptyList()
+    ): PagedResponseDto<RecipeDto>
+
+    @GET("recipes/my")
+    suspend fun getMyRecipes(): PagedResponseDto<RecipeDto>
 
     @GET("recipes/{id}")
     suspend fun getRecipeById(@Path("id") id: String): RecipeDto
@@ -29,11 +37,23 @@ interface RecipeBookApi {
     @GET("recipes/search")
     suspend fun searchRecipes(
         @Query("query") query: String,
-        @Query("tags") tags: List<String>
-    ): List<RecipeDto>
+        @Query("tagId") tagIds: List<String> = emptyList()
+    ): PagedResponseDto<RecipeDto>
+
+    @POST("recipes")
+    suspend fun createRecipe(@Body request: CreateRecipeRequestDto): RecipeDto
+
+    @PUT("recipes/{id}")
+    suspend fun updateRecipe(
+        @Path("id") id: String,
+        @Body request: CreateRecipeRequestDto
+    ): RecipeDto
+
+    @DELETE("recipes/{id}")
+    suspend fun deleteRecipe(@Path("id") id: String)
 
     @GET("favorites")
-    suspend fun getFavorites(): List<RecipeDto>
+    suspend fun getFavorites(): PagedResponseDto<RecipeDto>
 
     @POST("favorites/{recipeId}")
     suspend fun addFavorite(@Path("recipeId") recipeId: String)
@@ -42,10 +62,10 @@ interface RecipeBookApi {
     suspend fun removeFavorite(@Path("recipeId") recipeId: String)
 
     @GET("meal-plan")
-    suspend fun getMealPlan(): List<MealPlanEntryDto>
-
-    @GET("meal-plan")
-    suspend fun getMealPlanByDate(@Query("date") date: String): List<MealPlanEntryDto>
+    suspend fun getMealPlan(
+        @Query("from") from: String? = null,
+        @Query("to")   to: String?   = null
+    ): List<MealPlanEntryDto>
 
     @POST("meal-plan")
     suspend fun addToMealPlan(@Body request: AddToMealPlanRequestDto): MealPlanEntryDto
@@ -53,8 +73,14 @@ interface RecipeBookApi {
     @DELETE("meal-plan/{id}")
     suspend fun removeFromMealPlan(@Path("id") id: String)
 
+    @GET("shopping-list")
+    suspend fun getShoppingList(
+        @Query("from") from: String,
+        @Query("to")   to: String
+    ): List<ShoppingItemDto>
+
     @GET("recipes/{recipeId}/comments")
-    suspend fun getComments(@Path("recipeId") recipeId: String): List<CommentDto>
+    suspend fun getComments(@Path("recipeId") recipeId: String): PagedResponseDto<CommentDto>
 
     @POST("recipes/{recipeId}/comments")
     suspend fun addComment(

@@ -7,7 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -27,6 +31,7 @@ import com.recipebook.android.presentation.components.RecipeCard
 @Composable
 fun HomeScreen(
     onRecipeClick: (String) -> Unit,
+    onMyRecipesClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -34,6 +39,11 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.app_name)) })
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onMyRecipesClick) {
+                Icon(Icons.Outlined.EditNote, contentDescription = null)
+            }
         }
     ) { innerPadding ->
         when {
@@ -54,9 +64,9 @@ fun HomeScreen(
             ) {
                 items(uiState.recipes, key = { it.id }) { recipe ->
                     RecipeCard(
-                        recipe = recipe,
-                        isFavorite = recipe.isFavorite,
-                        onCardClick = { onRecipeClick(recipe.id) },
+                        recipe          = recipe,
+                        isFavorite      = recipe.isFavorite,
+                        onCardClick     = { onRecipeClick(recipe.id) },
                         onFavoriteClick = { viewModel.toggleFavorite(recipe) }
                     )
                 }

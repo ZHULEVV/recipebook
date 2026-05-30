@@ -20,4 +20,7 @@ sealed class Screen(val route: String) {
         const val ARG_RECIPE_ID = "recipeId"
         fun route(recipeId: String) = "comments/$recipeId"
     }
+
+    object MyRecipes    : Screen("my_recipes")
+    object CreateRecipe : Screen("create_recipe")
 }
