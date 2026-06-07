@@ -79,14 +79,7 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Профиль") },
-                actions = {
-                    IconButton(onClick = { showLogoutDialog = true }) {
-                        Icon(Icons.Outlined.Logout, contentDescription = null)
-                    }
-                }
-            )
+            TopAppBar(title = { Text("Профиль") })
         }
     ) { innerPadding ->
         Column(
